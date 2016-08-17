@@ -48,18 +48,18 @@ class MongoDB(object):
 
         # operations
         for k, v in server_status['opcounters'].items():
-            self.submit('total_operations', k, v)
+            self.submit('mongo_total_operations', k, v)
 
         # memory
         for t in ['resident', 'virtual', 'mapped']:
-            self.submit('memory', t, server_status['mem'][t])
+            self.submit('mongo_memory', t, server_status['mem'][t])
 
         # connections
-        self.submit('connections', 'current', server_status['connections']['current'])
+        self.submit('mongo_connections', 'current', server_status['connections']['current'])
 	if 'available' in server_status['connections']:
-            self.submit('connections', 'available', server_status['connections']['available'])
+            self.submit('mongo_connections', 'available', server_status['connections']['available'])
 	if 'totalCreated' in server_status['connections']:
-            self.submit('connections', 'totalCreated', server_status['connections']['totalCreated'])
+            self.submit('mongo_connections', 'totalCreated', server_status['connections']['totalCreated'])
 
 	# network
 	if 'network' in server_status:
@@ -73,7 +73,7 @@ class MongoDB(object):
                     value = 0.0
                 else:
                     value = float(server_status['globalLock']['lockTime'] - self.lockTime) * 100.0 / float(server_status['globalLock']['totalTime'] - self.lockTotalTime)
-                self.submit('percent', 'lock_ratio', value)
+                self.submit('mongo_percent', 'lock_ratio', value)
 
             self.lockTime = server_status['globalLock']['lockTime']
         self.lockTotalTime = server_status['globalLock']['totalTime']
@@ -92,9 +92,9 @@ class MongoDB(object):
             if misses < 0:
                 misses = None
             if accesses and misses is not None:
-                self.submit('cache_ratio', 'cache_misses', int(misses * 100 / float(accesses)))
+                self.submit('mongo_cache_ratio', 'cache_misses', int(misses * 100 / float(accesses)))
             else:
-                self.submit('cache_ratio', 'cache_misses', 0)
+                self.submit('mongo_cache_ratio', 'cache_misses', 0)
             self.accesses = index_counters['accesses']
             self.misses = index_counters['misses']
 
@@ -105,15 +105,15 @@ class MongoDB(object):
             db_stats = db.command('dbstats')
 
             # stats counts
-            self.submit('counter', 'object_count', db_stats['objects'], mongo_db)
-            self.submit('counter', 'collections', db_stats['collections'], mongo_db)
-            self.submit('counter', 'num_extents', db_stats['numExtents'], mongo_db)
-            self.submit('counter', 'indexes', db_stats['indexes'], mongo_db)
+            self.submit('mongo_counter', 'object_count', db_stats['objects'], mongo_db)
+            self.submit('mongo_counter', 'collections', db_stats['collections'], mongo_db)
+            self.submit('mongo_counter', 'num_extents', db_stats['numExtents'], mongo_db)
+            self.submit('mongo_counter', 'indexes', db_stats['indexes'], mongo_db)
 
             # stats sizes
-            self.submit('file_size', 'storage', db_stats['storageSize'], mongo_db)
-            self.submit('file_size', 'index', db_stats['indexSize'], mongo_db)
-            self.submit('file_size', 'data', db_stats['dataSize'], mongo_db)
+            self.submit('mongo_file_size', 'storage', db_stats['storageSize'], mongo_db)
+            self.submit('mongo_file_size', 'index', db_stats['indexSize'], mongo_db)
+            self.submit('mongo_file_size', 'data', db_stats['dataSize'], mongo_db)
 
         con.close()
 
